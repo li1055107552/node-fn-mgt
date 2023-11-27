@@ -1,0 +1,26 @@
+{
+  "name": "node-fn-mgt",
+  "version": "0.0.7",
+  "description": "function management - 基于node的，打造用户自己的函数库",
+  "main": "lib/fnmgt",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "fnmgt": "./bin/fnmgt"
+  },
+  "keywords": [
+    "node",
+    "fnmgt",
+    "function",
+    "management",
+    "warehouse",
+    "repository",
+    "library"
+  ],
+  "author": "细粒丁",
+  "license": "MIT",
+  "dependencies": {
+    "minimist": "^1.2.8"
+  }
+}
