@@ -1,4 +1,7 @@
 # data
+archive/
+lib/source
+*.emmx
 
 # Logs
 logs
