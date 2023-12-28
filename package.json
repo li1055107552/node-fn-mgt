@@ -2,7 +2,7 @@
   "name": "node-fn-mgt",
   "version": "0.0.7",
   "description": "function management - 基于node的，打造用户自己的函数库",
-  "main": "lib/fnmgt",
+  "main": "lib/entry",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -21,6 +21,9 @@
   "author": "细粒丁",
   "license": "MIT",
   "dependencies": {
-    "minimist": "^1.2.8"
+    "@babel/parser": "^7.23.6",
+    "@babel/traverse": "^7.23.6",
+    "minimist": "^1.2.8",
+    "wasm-pack": "^0.12.1"
   }
 }
