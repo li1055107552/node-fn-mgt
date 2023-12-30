@@ -1,6 +1,8 @@
 const fs = require('fs')
 const path = require('path')
 
+import { calculateFileMD5Snyc } from './md5';
+
 const globalData = {
     archiveDir: path.join("..", "archive")
 }
@@ -11,15 +13,15 @@ const globalData = {
  */
 function ensureDirectoryExists(dirPath) {
     if (!fs.existsSync(dirPath)) {
-        
-        if(path.extname(dirPath)){
+
+        if (path.extname(dirPath)) {
             const dir = path.dirname(dirPath);
             ensureDirectoryExists(dir)
 
             fs.writeFileSync(dirPath, "")
             console.log(`创建文件：${dirPath}`);
         }
-        else{
+        else {
             fs.mkdirSync(dirPath, { recursive: true });
             console.log(`创建目录：${dirPath}`);
         }
@@ -45,7 +47,7 @@ function init() {
         }
     }
 
-    if(!fs.existsSync(globalData.archiveDB)){
+    if (!fs.existsSync(globalData.archiveDB)) {
         fs.appendFileSync(globalData.archiveDB, JSON.stringify({}))
     }
 
@@ -69,7 +71,7 @@ function init() {
  * @param {"has"|"get"} [action] 执行动作
  * @returns {Boolean|File} 是否存在文件 | 返回该文件
  */
-function searchFile(fncName, type = 'js', action = 'has'){
+function searchFile(fncName, type = 'js', action = 'has') {
 
     const fileTypeDir = globalData[type == 'js' ? 'sourceResponseDir' : 'wasmResponseDir']
     const filePath = path.join(fileTypeDir, `${fncName}.${type}`)
@@ -102,8 +104,32 @@ function hasFile(fncName = "", type = "js") {
  * @param {"js"|"wasm"} [type] 文件类型
  * @returns {File} 返回该文件
  */
-function getFile(fncName, type = 'js'){
+function getFile(fncName, type = 'js') {
     return searchFile(fncName, type, 'get')
+}
+
+/**
+ * @description 复制文件
+ * @param {path} sourcePath 原路径
+ * @param {path} destinationPath 目标路径
+ */
+function copyFile(sourcePath, destinationPath) {
+    const readStream = fs.createReadStream(sourcePath);
+    const writeStream = fs.createWriteStream(destinationPath);
+
+    readStream.pipe(writeStream);
+
+    readStream.on('error', (error) => {
+        console.error('读取源文件错误:', error);
+    });
+
+    writeStream.on('error', (error) => {
+        console.error('写入目标文件错误:', error);
+    });
+
+    writeStream.on('finish', () => {
+        console.log('文件复制完成');
+    });
 }
 
 /**
@@ -119,7 +145,35 @@ function getFile(fncName, type = 'js'){
  * @param {"js"|"wasm"} [type] 文件类型
  * @returns {Boolean} 是否保存成功
  */
-function saveFile(fncObject, type = 'js') {
+async function saveFile(fncObject, type = 'js') {
+    if (type == 'js') {
+        const jsTempPath = path.join(globalData.tempDir, `${fncObject.name}.js`)
+        fs.writeFileSync(jsTempPath, fncObject.body)
+        const md5_js = await calculateFileMD5Snyc(jsTempPath)
+        const path_js = path.join(globalData.sourceResponseDir, `${fncObject.name}-${md5_js}.js`)
+        copyFile(jsTempPath, path_js)
+
+        // const wasmTempPath = path.join(globalData.tempDir, `${fncObject.name}.wasm`)
+        // 生成 wasm
+        // makeWasm(jsTempPath, wasmTempPath)
+        // 获取 temp/name.wasm 的 md5_wasm
+        // const md5_wasm = await calculateFileMD5Snyc(wasmTempPath)
+        // const path_wasm = path.join(globalData.wasmResponseDir, `${fncObject.name}-${md5_wasm}.wasm`)
+        // 把 temp/name.wasm 保存到 archive/wasm/name-md5_wasm.wasm
+        // copyFile(wasmTempPath, path_js)
+
+
+        globalData.archiveData[fncObject.name].push({
+            originPath: fncObject.originPath,
+            commitTime: Date.now(),
+            hash_js: md5_js,
+            // hash_wasm: md5_wasm,
+            path_js: path_js,
+            // path_wasm: archive / wasm / name - md5_wasm.wasm,
+            doc: fncObject.doc
+        })
+    }
+    
     // type == js
     // 将函数(体)写入 temp/name.js
     // 获取 temp/name.js 的 md5_js
@@ -151,7 +205,7 @@ function saveFile(fncObject, type = 'js') {
     // })
 }
 
-function list(){
+function list() {
 
 }
 
@@ -176,6 +230,6 @@ function test() {
             })
         }
     }
-    
+
 }
 // test()

@@ -27,6 +27,28 @@ function calculateFileMD5(filePath, callback) {
   });
 }
 
+// 计算文件的 MD5
+async function calculateFileMD5Snyc(filePath) {
+  return new Promise((resolve, reject) => {
+    const hash = crypto.createHash('md5');
+    const stream = fs.createReadStream(filePath);
+  
+    stream.on('data', (data) => {
+      hash.update(data);
+    });
+  
+    stream.on('end', () => {
+      const md5 = hash.digest('hex');
+      resolve(md5)
+    });
+  
+    stream.on('error', (err) => {
+      reject(err)
+    });
+  })
+
+}
+
 // // 例子：计算字符串的 MD5
 // const stringToHash = 'Hello, world!';
 // const stringMD5 = calculateStringMD5(stringToHash);
@@ -43,5 +65,5 @@ function calculateFileMD5(filePath, callback) {
 // });
 
 module.exports = {
-    calculateStringMD5, calculateFileMD5
+    calculateStringMD5, calculateFileMD5, calculateFileMD5Snyc
 }
