@@ -160,7 +160,7 @@ async function saveFile(fncObject, type = 'js') {
         // const md5_wasm = await calculateFileMD5Snyc(wasmTempPath)
         // const path_wasm = path.join(globalData.wasmResponseDir, `${fncObject.name}-${md5_wasm}.wasm`)
         // 把 temp/name.wasm 保存到 archive/wasm/name-md5_wasm.wasm
-        // copyFile(wasmTempPath, path_js)
+        // copyFile(wasmTempPath, path_wasm)
 
 
         globalData.archiveData[fncObject.name].push({
@@ -173,7 +173,25 @@ async function saveFile(fncObject, type = 'js') {
             doc: fncObject.doc
         })
     }
-    
+    else if (type == 'wasm') {
+        // const wasmTempPath = path.join(globalData.tempDir, `${fncObject.name}.wasm`)
+        // 获取 temp/name.wasm 的 md5_wasm
+        // const md5_wasm = await calculateFileMD5Snyc(originPath)
+        // const path_wasm = path.join(globalData.wasmResponseDir, `${fncObject.name}-${md5_wasm}.wasm`)
+        // 把 temp/name.wasm 保存到 archive/wasm/name-md5_wasm.wasm
+        // copyFile(originPath, path_wasm)
+
+
+        globalData.archiveData[fncObject.name].push({
+            originPath: fncObject.originPath,
+            commitTime: Date.now(),
+            // hash_js: md5_js,
+            hash_wasm: md5_wasm,
+            // path_js: path_js,
+            path_wasm: archive / wasm / name - md5_wasm.wasm,
+            doc: fncObject.doc
+        })
+    }
     // type == js
     // 将函数(体)写入 temp/name.js
     // 获取 temp/name.js 的 md5_js
@@ -191,6 +209,7 @@ async function saveFile(fncObject, type = 'js') {
     //      doc: fncObject.doc
     // })
 
+
     // type == wasm
     // 获取 path/name.wasm 的 md5_wasm
     // 把 path/name.wasm 保存到 archive/wasm/name-md5_wasm.wasm
@@ -206,7 +225,7 @@ async function saveFile(fncObject, type = 'js') {
 }
 
 function list() {
-
+    
 }
 
 init()
