@@ -172,6 +172,8 @@ async function saveFile(fncObject, type = 'js') {
             // path_wasm: archive / wasm / name - md5_wasm.wasm,
             doc: fncObject.doc
         })
+
+        return true
     }
     else if (type == 'wasm') {
         // const wasmTempPath = path.join(globalData.tempDir, `${fncObject.name}.wasm`)
@@ -191,6 +193,12 @@ async function saveFile(fncObject, type = 'js') {
             path_wasm: archive / wasm / name - md5_wasm.wasm,
             doc: fncObject.doc
         })
+
+        return true
+    }
+    else{
+        console.log(`type: ${type} is not supported`)
+        return false
     }
     // type == js
     // 将函数(体)写入 temp/name.js
@@ -224,8 +232,38 @@ async function saveFile(fncObject, type = 'js') {
     // })
 }
 
-function list() {
-    
+function getList(type = "") {
+
+    const jsfiles = fs.readdirSync(globalData.sourceResponseDir)
+    const wasmfiles = fs.readdirSync(globalData.wasmResponseDir)
+
+    function handle(files, dirPath) {
+        let list = []
+        files.forEach(fileName => {
+            const filePath = path.join(dirPath, fileName)
+            const stats = fs.statSync(filePath)
+            if (stats.isFile())
+                list.push(path.basename(fileName))
+        })
+        return list
+    }
+
+    if (type == "") {
+        return {
+            jslist: handle(jsfiles, globalData.sourceResponseDir),
+            wasmlist: handle(wasmfiles, globalData.wasmResponseDir)
+        }
+    }
+    else if (type == "js") {
+        return handle(jsfiles, globalData.sourceResponseDir)
+    } 
+    else if (type == "wasm"){
+        return handle(wasmfiles, globalData.wasmResponseDir)
+    }
+    else{
+        console.log(`type: ${type} is not supported`)
+        return []
+    }
 }
 
 init()
