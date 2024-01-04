@@ -232,6 +232,11 @@ async function saveFile(fncObject, type = 'js') {
     // })
 }
 
+/**
+ * @description 获取函数列表
+ * @param {"js"|"wasm"} [type] 文件类型, 不传则返回全部
+ * @returns {Array|Object} 返回js类型或wasm类型的列表，或以对象形式返回两者所有
+ */
 function getList(type = "") {
 
     const jsfiles = fs.readdirSync(globalData.sourceResponseDir)
@@ -261,15 +266,15 @@ function getList(type = "") {
         return handle(wasmfiles, globalData.wasmResponseDir)
     }
     else{
-        console.log(`type: ${type} is not supported`)
+        console.error(`type: ${type} is not supported`)
         return []
     }
 }
 
 init()
-// module.exports = {
-//     hasFile, getFile, saveFile
-// }
+module.exports = {
+    hasFile, getFile, saveFile
+}
 
 function test() {
     init()
