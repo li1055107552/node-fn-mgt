@@ -1,7 +1,8 @@
 const fs = require('fs')
 const path = require('path')
 
-import { calculateFileMD5Snyc } from './md5';
+// import { calculateFileMD5Snyc } from './md5';
+const md5 = require('./md5')
 
 const globalData = {
     archiveDir: path.join("..", "archive")
@@ -26,7 +27,7 @@ function ensureDirectoryExists(dirPath) {
             console.log(`创建目录：${dirPath}`);
         }
     } else {
-        console.log(`已存在：${dirPath}`);
+        // console.debug(`已存在：${dirPath}`)
     }
 }
 
@@ -60,7 +61,7 @@ function init() {
 
     globalData.archiveData = JSON.parse(fs.readFileSync(globalData.archiveDB))
 
-    console.log(globalData);
+    // console.log(globalData);
 
 }
 
@@ -77,10 +78,11 @@ function searchFile(fncName, type = 'js', action = 'has') {
     const filePath = path.join(fileTypeDir, `${fncName}.${type}`)
 
     if (action == 'has') {
-        return fs.existsSync(filePath)
+        if(!globalData.archiveData[fncName]) return false
+        return fs.existsSync(globalData.archiveData[fncName][globalData.archiveData[fncName].length - 1][type == "js" ? "path_js" : "path_wasm"])
     }
     else if (action == 'get') {
-        return fs.readFileSync(filePath)
+        return fs.readFileSync(globalData.archiveData[fncName][globalData.archiveData[fncName].length - 1][type == "js" ? "path_js" : "path_wasm"])
     }
     else {
         console.log(`type: ${type}, fncName: ${fncName}, fileTypeDir: ${fileTypeDir}, filePath: ${filePath}`);
@@ -149,7 +151,8 @@ async function saveFile(fncObject, type = 'js') {
     if (type == 'js') {
         const jsTempPath = path.join(globalData.tempDir, `${fncObject.name}.js`)
         fs.writeFileSync(jsTempPath, fncObject.body)
-        const md5_js = await calculateFileMD5Snyc(jsTempPath)
+        // const md5_js = await calculateFileMD5Snyc(jsTempPath)
+        const md5_js = await md5.calculateFileMD5Snyc(jsTempPath)
         const path_js = path.join(globalData.sourceResponseDir, `${fncObject.name}-${md5_js}.js`)
         copyFile(jsTempPath, path_js)
 
@@ -162,6 +165,8 @@ async function saveFile(fncObject, type = 'js') {
         // 把 temp/name.wasm 保存到 archive/wasm/name-md5_wasm.wasm
         // copyFile(wasmTempPath, path_wasm)
 
+        if (!globalData.archiveData[fncObject.name])
+            globalData.archiveData[fncObject.name] = []
 
         globalData.archiveData[fncObject.name].push({
             originPath: fncObject.originPath,
@@ -172,7 +177,7 @@ async function saveFile(fncObject, type = 'js') {
             // path_wasm: archive / wasm / name - md5_wasm.wasm,
             doc: fncObject.doc
         })
-
+        fs.writeFileSync(globalData.archiveDB, JSON.stringify(globalData.archiveData, null, 2), "utf-8")
         return true
     }
     else if (type == 'wasm') {
@@ -196,7 +201,7 @@ async function saveFile(fncObject, type = 'js') {
 
         return true
     }
-    else{
+    else {
         console.log(`type: ${type} is not supported`)
         return false
     }
@@ -230,6 +235,8 @@ async function saveFile(fncObject, type = 'js') {
     //      path_wasm: path/name.wasm,
     //      doc: fncObject.doc
     // })
+
+    // 保存 globalData.archiveData
 }
 
 /**
@@ -261,11 +268,11 @@ function getList(type = "") {
     }
     else if (type == "js") {
         return handle(jsfiles, globalData.sourceResponseDir)
-    } 
-    else if (type == "wasm"){
+    }
+    else if (type == "wasm") {
         return handle(wasmfiles, globalData.wasmResponseDir)
     }
-    else{
+    else {
         console.error(`type: ${type} is not supported`)
         return []
     }
