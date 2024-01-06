@@ -2,3 +2,4 @@ node_modules/
 *.log
 *.emmx
 archive/
+test/
