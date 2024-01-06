@@ -4,6 +4,16 @@ const path = require('path')
 // import { calculateFileMD5Snyc } from './md5';
 const md5 = require('./md5')
 
+/**
+ * @constant {Object} globalData
+ * @constant {path} globalData.archiveDir
+ * @constant {path} globalData.archiveDB
+ * @constant {path} globalData.sourceResponseDir
+ * @constant {path} globalData.wasmResponseDir
+ * @constant {path} globalData.tempDir
+ * @constant {path} globalData.customConfig
+ * @constant {Object} globalData.archiveData
+ */
 const globalData = {
     archiveDir: path.join("..", "archive")
 }
@@ -65,6 +75,19 @@ function init() {
 
 }
 
+function filter(arr) {
+    let res = {
+        js: false,
+        wasm: false
+    }
+    for (let i = 0; i < arr.length && !(res.js && res.wasm); i++) {
+        const element = arr[i];
+        if (element.hash_js) res.js = true
+        if (element.hash_wasm) res.wasm = true
+    }
+    return res
+}
+
 /**
  * 
  * @param {String} fncName 函数名
@@ -78,7 +101,7 @@ function searchFile(fncName, type = 'js', action = 'has') {
     const filePath = path.join(fileTypeDir, `${fncName}.${type}`)
 
     if (action == 'has') {
-        if(!globalData.archiveData[fncName]) return false
+        if (!globalData.archiveData[fncName]) return false
         return fs.existsSync(globalData.archiveData[fncName][globalData.archiveData[fncName].length - 1][type == "js" ? "path_js" : "path_wasm"])
     }
     else if (action == 'get') {
@@ -244,7 +267,7 @@ async function saveFile(fncObject, type = 'js') {
  * @param {"js"|"wasm"} [type] 文件类型, 不传则返回全部
  * @returns {Array|Object} 返回js类型或wasm类型的列表，或以对象形式返回两者所有
  */
-function getList(type = "") {
+function getListFromResponse(type = "") {
 
     const jsfiles = fs.readdirSync(globalData.sourceResponseDir)
     const wasmfiles = fs.readdirSync(globalData.wasmResponseDir)
@@ -278,9 +301,26 @@ function getList(type = "") {
     }
 }
 
+/**
+ * @description 获取函数列表
+ * @returns {Object}
+ */
+function getListFromDB() {
+    let res = {}
+    const keys = Object.keys(globalData.archiveData)
+    console.log(keys)
+    if (keys.length == 0) return {}
+    for (let i = 0; i < keys.length; i++) {
+        const fncName = keys[i];
+        const fns = globalData.archiveData[fncName]
+        res[fncName] = filter(fns)
+    }
+    return res
+}
+
 init()
 module.exports = {
-    hasFile, getFile, saveFile
+    hasFile, getFile, saveFile, getListFromDB
 }
 
 function test() {
