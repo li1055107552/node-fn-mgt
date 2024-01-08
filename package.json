@@ -1,6 +1,6 @@
 {
-  "name": "node-fn-mgt",
-  "version": "0.0.7",
+  "name": "fnmgt",
+  "version": "0.0.1",
   "description": "function management - 基于node的，打造用户自己的函数库",
   "main": "lib/entry",
   "scripts": {

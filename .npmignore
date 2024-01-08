@@ -3,3 +3,4 @@ node_modules/
 *.emmx
 archive/
 test/
+lib/source
